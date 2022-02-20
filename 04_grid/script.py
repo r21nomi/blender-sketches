@@ -1,6 +1,6 @@
 import bmesh
 import bpy
-from math import sin, tau
+from math import sin, cos, tau, pi, pow, sqrt
 
 # Delete existing objects
 for obj in bpy.data.objects:
@@ -34,8 +34,23 @@ theta = 0.0
 bpy.context.scene.frame_start = 0
 bpy.context.scene.frame_end = totalFrame
 
+
 def lerp(a, b, t):
     return (1.0 - t) * a + b * t
+
+def map(value, beforeMin, beforeMax, afterMin, afterMax):
+    return afterMin + (afterMax - afterMin) * ((value - beforeMin) / (beforeMax - beforeMin))
+
+def ease_out_expo(x):
+    t = x
+    b = 0.0
+    c = 1.0
+    d = 1.0
+    if t == d:
+        return b + c
+    else:
+        return c * (-pow(2.0, -10.0 * t / d) + 1.0) + b
+
 
 # Create new objects
 for n in grid_range:
@@ -43,6 +58,8 @@ for n in grid_range:
     y = n // count
     posX = -gridSize + totalGridSize * invCount * x + xCenter
     posY = -gridSize + totalGridSize * invCount * y + yCenter
+
+    d = sqrt(pow(posX, 2) + pow(posY, 2))
 
     bm = bmesh.new()
     bmesh.ops.create_cube(bm, size=itemSize)
@@ -66,10 +83,10 @@ for n in grid_range:
     # Animation
     for frame in range(0, totalFrame):
         bpy.context.scene.frame_set(frame)
-        mesh_obj.location.z = sin(theta + x) * 0.2
+        e = ease_out_expo(map(sin(theta + d), -1, 1, 0, 1))
+        mesh_obj.location.z = e * 0.6
         mesh_obj.keyframe_insert(data_path="location")
-        scale = lerp(0.8, 1.0, (sin(theta + y) * 0.5 + 0.5))
-        mesh_obj.scale = (scale, scale, scale)
+        mesh_obj.scale = ((1 - e), (1 - e), e)
         mesh_obj.keyframe_insert(data_path="scale")
         theta += tau / totalFrame
 
