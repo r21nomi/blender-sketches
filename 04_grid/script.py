@@ -52,13 +52,21 @@ for n in grid_range:
     bm.to_mesh(mesh_data)
     bm.free()
 
+    # Material
+    mat = bpy.data.materials.new(
+        name="Material ({0}, {1}, {2})".format(x, y, 0)
+    )
+    mat.diffuse_color = (1.0, 1.0, 0.0, 1.0)
+    mesh_data.materials.append(mat)
+
     mesh_obj = bpy.data.objects.new(mesh_data.name, mesh_data)
     # Location of each cube
     mesh_obj.location = (posX, posY, 0)
 
+    # Animation
     for frame in range(0, totalFrame):
         bpy.context.scene.frame_set(frame)
-        mesh_obj.location.z = sin(theta + x) * 0.1
+        mesh_obj.location.z = sin(theta + x) * 0.2
         mesh_obj.keyframe_insert(data_path="location")
         scale = lerp(0.8, 1.0, (sin(theta + y) * 0.5 + 0.5))
         mesh_obj.scale = (scale, scale, scale)
