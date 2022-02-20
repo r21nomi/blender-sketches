@@ -1,5 +1,6 @@
 import bmesh
 import bpy
+from math import sin, tau
 
 # Delete existing objects
 for obj in bpy.data.objects:
@@ -21,11 +22,20 @@ gridSize = 2.0
 totalGridSize = gridSize + gridSize
 
 invCount = 1.0 / (count - 1.0)
-padding = 0.025
+padding = 0.0
 itemSize = (totalGridSize / count) - padding
 
 xCenter = 0.0
 yCenter = 0.0
+
+totalFrame = 100
+theta = 0.0
+
+bpy.context.scene.frame_start = 0
+bpy.context.scene.frame_end = totalFrame
+
+def lerp(a, b, t):
+    return (1.0 - t) * a + b * t
 
 # Create new objects
 for n in grid_range:
@@ -45,5 +55,14 @@ for n in grid_range:
     mesh_obj = bpy.data.objects.new(mesh_data.name, mesh_data)
     # Location of each cube
     mesh_obj.location = (posX, posY, 0)
+
+    for frame in range(0, totalFrame):
+        bpy.context.scene.frame_set(frame)
+        mesh_obj.location.z = sin(theta + x) * 0.1
+        mesh_obj.keyframe_insert(data_path="location")
+        scale = lerp(0.8, 1.0, (sin(theta + y) * 0.5 + 0.5))
+        mesh_obj.scale = (scale, scale, scale)
+        mesh_obj.keyframe_insert(data_path="scale")
+        theta += tau / totalFrame
 
     bpy.context.collection.objects.link(mesh_obj)
