@@ -1,10 +1,12 @@
-import colorsys
-
 import bpy, bmesh
 import noise
 import sys
+from math import tau, sin
 
 print(sys.path)
+
+totalFrame = 100
+theta = 0.0
 
 # Delete existing objects
 for obj in bpy.data.objects:
@@ -18,10 +20,10 @@ for i in range(0, 1):
         "Cube ({0}, {1}, {2})".format(0, 0, 0)
     )
 
-    for index, v in enumerate(bm.verts):
-        n = noise.snoise2(index, index)
-        if index % 2 == 0:
-            v.co += (n * 0.5 * v.normal)
+    # for index, v in enumerate(bm.verts):
+    #     n = noise.snoise2(index, index)
+    #     if index % 2 == 0:
+    #         v.co += (n * 0.5 * v.normal)
 
     bm.to_mesh(mesh_data)
     bm.free()
@@ -36,5 +38,18 @@ for i in range(0, 1):
 
     mesh_obj = bpy.data.objects.new(mesh_data.name, mesh_data)
     mesh_obj.location = (0, 0, 0.5)
+
+    # Animation
+    for frame in range(0, totalFrame):
+        bpy.context.scene.frame_set(frame)
+
+        for index, v in enumerate(mesh_data.vertices):
+            n = noise.snoise2(index, index)
+            if index % 2 == 0:
+                # animate only z-axis
+                v.co[2] = (sin(theta + n * 10) * 0.3 * v.normal[2])
+                v.keyframe_insert(data_path="co")
+        theta += tau / totalFrame
+        print(theta)
 
     bpy.context.collection.objects.link(mesh_obj)
